@@ -1,0 +1,32 @@
+name: Polymarket Paper Trading Bot
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # cada 15 minutos
+  workflow_dispatch:          # permite ejecutar manualmente
+
+permissions:
+  contents: write
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run paper trading bot
+        run: python bot.py
+
+      - name: Commit & push data
+        run: |
+          git config user.name "polymarket-bot"
+          git config user.email "bot@polymarket-paper"
+          git add docs/data.json
+          git diff --staged --quiet || git commit -m "bot: tick $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          git push
