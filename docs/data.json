@@ -1,0 +1,18 @@
+{
+  "capital": {
+    "arb_yes_no": 1000,
+    "arb_logico": 1000,
+    "market_making": 1000,
+    "mean_reversion": 1000,
+    "momentum": 1000
+  },
+  "historial": [],
+  "ultima_actualizacion": null,
+  "stats": {
+    "arb_yes_no":     {"trades": 0, "profit_total": 0.0, "mejor_tick": 0.0, "peor_tick": 0.0},
+    "arb_logico":     {"trades": 0, "profit_total": 0.0, "mejor_tick": 0.0, "peor_tick": 0.0},
+    "market_making":  {"trades": 0, "profit_total": 0.0, "mejor_tick": 0.0, "peor_tick": 0.0},
+    "mean_reversion": {"trades": 0, "profit_total": 0.0, "mejor_tick": 0.0, "peor_tick": 0.0},
+    "momentum":       {"trades": 0, "profit_total": 0.0, "mejor_tick": 0.0, "peor_tick": 0.0}
+  }
+}
