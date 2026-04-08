@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polymarket Paper Trading</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c10;
+    --bg2: #0d1117;
+    --bg3: #161b22;
+    --bg4: #1c2330;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --green2: #238636;
+    --red: #f85149;
+    --yellow: #d29922;
+    --purple: #bc8cff;
+    --teal: #39d353;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* scanline effect */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    gap: 12px;
+  }
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .logo span { color: var(--muted); font-weight: 400; }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s infinite;
+    display: inline-block;
+    margin-right: 4px;
+  }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  .main { padding: 20px; max-width: 1400px; margin: 0 auto; }
+
+  /* KPI strip */
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .kpi {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  .kpi.green::before { background: var(--green); }
+  .kpi.red::before { background: var(--red); }
+  .kpi.yellow::before { background: var(--yellow); }
+  .kpi.purple::before { background: var(--purple); }
+
+  .kpi-label {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 6px;
+  }
+
+  .kpi-value {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .kpi-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+
+  /* Grid layout */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  @media (max-width: 900px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 14px 18px 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .card-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  .card-body { padding: 16px 18px; }
+
+  /* Chart container */
+  .chart-wrap {
+    position: relative;
+    height: 220px;
+    padding: 14px 18px 14px;
+  }
+
+  @media (max-width: 600px) {
+    .chart-wrap { height: 180px; }
+  }
+
+  /* Strategy table */
+  .strat-table { width: 100%; border-collapse: collapse; }
+
+  .strat-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .strat-table td {
+    padding: 10px 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  .strat-table tr:last-child td { border-bottom: none; }
+  .strat-table tr:hover td { background: var(--bg3); }
+
+  .risk-badge {
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  .r-muy_bajo { background: rgba(63,185,80,.15); color: var(--green); }
+  .r-bajo { background: rgba(63,185,80,.1); color: #7ee787; }
+  .r-medio_bajo { background: rgba(210,153,34,.15); color: var(--yellow); }
+  .r-medio { background: rgba(210,153,34,.2); color: #e3b341; }
+  .r-alto { background: rgba(248,81,73,.15); color: var(--red); }
+
+  /* Trade feed */
+  .trade-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+
+  .trade-item:last-child { border-bottom: none; }
+
+  .trade-icon {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+    font-family: var(--mono);
+    font-weight: 600;
+  }
+
+  .ti-arb { background: rgba(88,166,255,.15); color: var(--accent); }
+  .ti-mm { background: rgba(188,140,255,.15); color: var(--purple); }
+  .ti-mr { background: rgba(210,153,34,.15); color: var(--yellow); }
+  .ti-mo { background: rgba(248,81,73,.15); color: var(--red); }
+
+  .trade-meta { flex: 1; min-width: 0; }
+  .trade-title { font-size: 12px; color: var(--text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .trade-sub { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+
+  .trade-pnl {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* Tab nav */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 0 18px;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+
+  .tab {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 10px 14px;
+    cursor: pointer;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all .15s;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+  }
+
+  /* Loading */
+  #loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+    gap: 16px;
+    font-family: var(--mono);
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .spinner {
+    width: 32px; height: 32px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #app { display: none; }
+
+  .mini-chart-wrap { height: 60px; position: relative; }
+
+  .update-flash {
+    animation: flash .5s ease;
+  }
+  @keyframes flash { 0%{background:rgba(88,166,255,.1)} 100%{background:transparent} }
+
+  .empty-state {
+    padding: 30px;
+    text-align: center;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 2;
+  }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <div>Cargando datos de paper trading...</div>
+</div>
+
+<div id="app">
+  <header>
+    <div class="logo">POLY<span>/</span>PAPER <span>// trading bot</span></div>
+    <div class="status-bar">
+      <span><span class="status-dot"></span>LIVE</span>
+      <span id="last-update">--</span>
+      <span id="market-count">-- mercados</span>
+    </div>
+  </header>
+
+  <div class="main">
+
+    <!-- KPI strip -->
+    <div class="kpi-strip" id="kpi-strip">
+      <div class="kpi green">
+        <div class="kpi-label">Capital Total</div>
+        <div class="kpi-value" id="kpi-total">$0</div>
+        <div class="kpi-sub" id="kpi-total-pct">+0.00%</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Mejor Estrategia</div>
+        <div class="kpi-value" id="kpi-best-name" style="font-size:14px;margin-top:3px">--</div>
+        <div class="kpi-sub" id="kpi-best-pct">+0.00%</div>
+      </div>
+      <div class="kpi yellow">
+        <div class="kpi-label">Ticks ejecutados</div>
+        <div class="kpi-value" id="kpi-ticks">0</div>
+        <div class="kpi-sub">actualizaciones</div>
+      </div>
+      <div class="kpi purple">
+        <div class="kpi-label">Oportunidades arb</div>
+        <div class="kpi-value" id="kpi-arb">0</div>
+        <div class="kpi-sub">último tick</div>
+      </div>
+    </div>
+
+    <!-- PnL Chart + Strategy breakdown -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">PnL Acumulado — todas las estrategias</span>
+          <div class="tabs" style="border:none;padding:0;gap:8px;" id="chart-period-tabs">
+            <span class="tab active" data-period="all" onclick="setPeriod('all',this)">Todo</span>
+            <span class="tab" data-period="48" onclick="setPeriod(48,this)">48h</span>
+            <span class="tab" data-period="24" onclick="setPeriod(24,this)">24h</span>
+            <span class="tab" data-period="8" onclick="setPeriod(8,this)">8h</span>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="pnlChart" role="img" aria-label="PnL acumulado por estrategia"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Capital por estrategia</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="capitalChart" role="img" aria-label="Capital actual por estrategia"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Strategy table -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-header">
+        <span class="card-title">Estrategias — Resumen</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">capital inicial: $1,000 por estrategia</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="strat-table">
+          <thead>
+            <tr>
+              <th>Estrategia</th>
+              <th>Riesgo</th>
+              <th>Capital</th>
+              <th>PnL $</th>
+              <th>Retorno %</th>
+              <th>Mejor tick</th>
+              <th>Oport. último</th>
+            </tr>
+          </thead>
+          <tbody id="strat-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Mini charts + trade feed -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Evolución por estrategia</span>
+        </div>
+        <div class="card-body" id="mini-charts" style="display:flex;flex-direction:column;gap:16px;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Últimas señales detectadas</span>
+        </div>
+        <div class="card-body" id="trade-feed"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    POLYMARKET PAPER TRADING — Solo simulación, sin dinero real ·
+    Datos: Polymarket Gamma API · Actualización cada 15 min via GitHub Actions ·
+    <span id="footer-ticks"></span>
+  </footer>
+</div>
+
+<script>
+const ESTRATEGIAS_META = {
+  arb_yes_no:     { nombre: "Arbitraje YES+NO",    riesgo: "muy_bajo",   color: "#3fb950", icon: "ARB" },
+  arb_logico:     { nombre: "Arbitraje Lógico",    riesgo: "bajo",       color: "#58a6ff", icon: "LOG" },
+  market_making:  { nombre: "Market Making",       riesgo: "medio_bajo", color: "#bc8cff", icon: "MM"  },
+  mean_reversion: { nombre: "Mean Reversion 15m",  riesgo: "medio",      color: "#d29922", icon: "MR"  },
+  momentum:       { nombre: "Momentum Chainlink",  riesgo: "alto",       color: "#f85149", icon: "MOM" },
+};
+
+const CAPITAL_INICIAL = 1000;
+let STATE = null;
+let pnlChart = null;
+let capitalChart = null;
+let miniCharts = {};
+let currentPeriod = "all";
+
+async function fetchData() {
+  try {
+    const r = await fetch("data.json?t=" + Date.now());
+    if (!r.ok) throw new Error("no data");
+    return await r.json();
+  } catch(e) {
+    console.warn("fetchData error:", e);
+    return null;
+  }
+}
+
+function fmt(n, decimals=2) {
+  if (n == null || isNaN(n)) return "0.00";
+  return Number(n).toFixed(decimals);
+}
+
+function fmtPct(n) {
+  const v = Number(n);
+  return (v >= 0 ? "+" : "") + fmt(v) + "%";
+}
+
+function fmtDollar(n) {
+  const v = Number(n);
+  return (v >= 0 ? "+$" : "-$") + Math.abs(v).toFixed(2);
+}
+
+function colorPct(n) {
+  return Number(n) >= 0 ? "pos" : "neg";
+}
+
+function getHistorialSlice(historial) {
+  if (currentPeriod === "all") return historial;
+  const ticks = Number(currentPeriod) * 4; // 4 ticks/hora
+  return historial.slice(-ticks);
+}
+
+function renderKPIs(state) {
+  const capital = state.capital || {};
+  const totalCapital = Object.values(capital).reduce((a,b) => a+b, 0);
+  const totalInicial = CAPITAL_INICIAL * Object.keys(ESTRATEGIAS_META).length;
+  const totalPct = (totalCapital - totalInicial) / totalInicial * 100;
+
+  document.getElementById("kpi-total").textContent = "$" + fmt(totalCapital);
+  const kpiPct = document.getElementById("kpi-total-pct");
+  kpiPct.textContent = fmtPct(totalPct);
+  kpiPct.className = "kpi-sub " + colorPct(totalPct);
+
+  // Mejor estrategia
+  let best = null, bestPct = -Infinity;
+  for (const [k, v] of Object.entries(capital)) {
+    const pct = (v - CAPITAL_INICIAL) / CAPITAL_INICIAL * 100;
+    if (pct > bestPct) { bestPct = pct; best = k; }
+  }
+  if (best) {
+    document.getElementById("kpi-best-name").textContent = ESTRATEGIAS_META[best]?.nombre || best;
+    const el = document.getElementById("kpi-best-pct");
+    el.textContent = fmtPct(bestPct);
+    el.className = "kpi-sub " + colorPct(bestPct);
+  }
+
+  const hist = state.historial || [];
+  document.getElementById("kpi-ticks").textContent = hist.length;
+
+  // Oportunidades arb último tick
+  const ultimo = hist[hist.length - 1];
+  if (ultimo) {
+    const arb = ultimo.estrategias?.arb_yes_no?.oportunidades || 0;
+    document.getElementById("kpi-arb").textContent = arb;
+    document.getElementById("market-count").textContent = (ultimo.mercados_disponibles || 0) + " mercados";
+    const d = new Date(ultimo.timestamp);
+    document.getElementById("last-update").textContent = "↻ " + d.toLocaleTimeString("es-ES", {hour:"2-digit",minute:"2-digit"});
+  }
+}
+
+function renderStratTable(state) {
+  const tbody = document.getElementById("strat-tbody");
+  const capital = state.capital || {};
+  const stats = state.stats || {};
+  const hist = state.historial || [];
+  const ultimo = hist[hist.length - 1]?.estrategias || {};
+
+  tbody.innerHTML = "";
+  for (const [key, meta] of Object.entries(ESTRATEGIAS_META)) {
+    const cap = capital[key] || CAPITAL_INICIAL;
+    const pct = (cap - CAPITAL_INICIAL) / CAPITAL_INICIAL * 100;
+    const pnl = cap - CAPITAL_INICIAL;
+    const s = stats[key] || {};
+    const oport = ultimo[key]?.oportunidades ?? ultimo[key]?.señales ?? "-";
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="color:${meta.color};font-weight:500">${meta.nombre}</td>
+      <td><span class="risk-badge r-${meta.riesgo}">${meta.riesgo.replace("_"," ")}</span></td>
+      <td>$${fmt(cap)}</td>
+      <td class="${colorPct(pnl)}">${fmtDollar(pnl)}</td>
+      <td class="${colorPct(pct)}" style="font-weight:600">${fmtPct(pct)}</td>
+      <td class="pos">+$${fmt(s.mejor_tick || 0, 4)}</td>
+      <td style="color:var(--muted)">${oport}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+function buildPnLChart(state) {
+  const hist = getHistorialSlice(state.historial || []);
+  if (!hist.length) return;
+
+  const labels = hist.map(h => {
+    const d = new Date(h.timestamp);
+    return d.getHours().toString().padStart(2,"0") + ":" + d.getMinutes().toString().padStart(2,"0");
+  });
+
+  const datasets = Object.entries(ESTRATEGIAS_META).map(([key, meta]) => ({
+    label: meta.nombre,
+    data: hist.map(h => {
+      const cap = h.estrategias?.[key]?.capital_actual || CAPITAL_INICIAL;
+      return parseFloat(((cap - CAPITAL_INICIAL) / CAPITAL_INICIAL * 100).toFixed(4));
+    }),
+    borderColor: meta.color,
+    backgroundColor: meta.color + "18",
+    borderWidth: 1.5,
+    pointRadius: 0,
+    tension: 0.3,
+    fill: false,
+  }));
+
+  const ctx = document.getElementById("pnlChart").getContext("2d");
+  if (pnlChart) pnlChart.destroy();
+  pnlChart = new Chart(ctx, {
+    type: "line",
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "#161b22",
+          borderColor: "rgba(255,255,255,.1)",
+          borderWidth: 1,
+          titleFont: { family: "'IBM Plex Mono'" },
+          bodyFont: { family: "'IBM Plex Mono'", size: 11 },
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y >= 0 ? "+" : ""}${ctx.parsed.y.toFixed(3)}%`
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: "#7d8590", font: { family: "'IBM Plex Mono'", size: 9 }, maxTicksLimit: 10 },
+          grid: { color: "rgba(255,255,255,.04)" },
+        },
+        y: {
+          ticks: { color: "#7d8590", font: { family: "'IBM Plex Mono'", size: 9 }, callback: v => v.toFixed(2)+"%" },
+          grid: { color: "rgba(255,255,255,.04)" },
+        }
+      }
+    }
+  });
+}
+
+function buildCapitalChart(state) {
+  const capital = state.capital || {};
+  const keys = Object.keys(ESTRATEGIAS_META);
+  const data = keys.map(k => parseFloat((capital[k] || CAPITAL_INICIAL).toFixed(2)));
+  const colors = keys.map(k => ESTRATEGIAS_META[k].color);
+  const labels = keys.map(k => ESTRATEGIAS_META[k].nombre);
+
+  const ctx = document.getElementById("capitalChart").getContext("2d");
+  if (capitalChart) capitalChart.destroy();
+  capitalChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: colors.map(c => c + "55"),
+        borderColor: colors,
+        borderWidth: 1.5,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "#161b22",
+          borderColor: "rgba(255,255,255,.1)",
+          borderWidth: 1,
+          titleFont: { family: "'IBM Plex Mono'" },
+          bodyFont: { family: "'IBM Plex Mono'", size: 11 },
+          callbacks: {
+            label: ctx => ` $${ctx.parsed.y.toFixed(2)} (${((ctx.parsed.y - CAPITAL_INICIAL)/CAPITAL_INICIAL*100).toFixed(3)}%)`
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: "#7d8590", font: { size: 9, family: "'IBM Plex Mono'" }, maxRotation: 30 },
+          grid: { display: false }
+        },
+        y: {
+          ticks: { color: "#7d8590", font: { family: "'IBM Plex Mono'", size: 9 }, callback: v => "$"+v },
+          grid: { color: "rgba(255,255,255,.04)" },
+          min: Math.min(CAPITAL_INICIAL * 0.95, ...Object.values(capital).map(v => v * 0.98)),
+        }
+      }
+    }
+  });
+}
+
+function buildMiniCharts(state) {
+  const container = document.getElementById("mini-charts");
+  container.innerHTML = "";
+  const hist = getHistorialSlice(state.historial || []);
+  if (!hist.length) {
+    container.innerHTML = '<div class="empty-state">Sin datos todavía.<br>El bot ejecutará su primer tick en máx. 15 min.</div>';
+    return;
+  }
+
+  for (const [key, meta] of Object.entries(ESTRATEGIAS_META)) {
+    const wrap = document.createElement("div");
+    wrap.style.cssText = "display:flex;flex-direction:column;gap:4px";
+
+    const pct = ((state.capital?.[key] || CAPITAL_INICIAL) - CAPITAL_INICIAL) / CAPITAL_INICIAL * 100;
+
+    wrap.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-family:var(--mono);font-size:11px;color:${meta.color};font-weight:500">${meta.nombre}</span>
+        <span style="font-family:var(--mono);font-size:11px" class="${colorPct(pct)}">${fmtPct(pct)}</span>
+      </div>
+      <div class="mini-chart-wrap"><canvas id="mini-${key}"></canvas></div>
+    `;
+    container.appendChild(wrap);
+
+    const data = hist.map(h => {
+      const cap = h.estrategias?.[key]?.capital_actual || CAPITAL_INICIAL;
+      return parseFloat(((cap - CAPITAL_INICIAL)/CAPITAL_INICIAL*100).toFixed(4));
+    });
+
+    setTimeout(() => {
+      const ctx = document.getElementById("mini-"+key)?.getContext("2d");
+      if (!ctx) return;
+      if (miniCharts[key]) miniCharts[key].destroy();
+      miniCharts[key] = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: data.map((_,i) => i),
+          datasets: [{
+            data,
+            borderColor: meta.color,
+            borderWidth: 1.5,
+            pointRadius: 0,
+            tension: 0.4,
+            fill: { target: "origin", above: meta.color+"22", below: meta.color+"22" },
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { enabled: false } },
+          scales: {
+            x: { display: false },
+            y: { display: false }
+          }
+        }
+      });
+    }, 50);
+  }
+}
+
+function buildTradeFeed(state) {
+  const feed = document.getElementById("trade-feed");
+  feed.innerHTML = "";
+  const hist = state.historial || [];
+  if (!hist.length) {
+    feed.innerHTML = '<div class="empty-state">Esperando primer tick...</div>';
+    return;
+  }
+
+  const recent = hist.slice(-4).reverse();
+  const items = [];
+
+  for (const tick of recent) {
+    const ts = new Date(tick.timestamp).toLocaleTimeString("es-ES", {hour:"2-digit",minute:"2-digit"});
+    for (const [key, meta] of Object.entries(ESTRATEGIAS_META)) {
+      const d = tick.estrategias?.[key];
+      if (!d) continue;
+      const profit = d.profit_tick || 0;
+      if (Math.abs(profit) < 0.0001 && !d.oportunidades && !d.señales) continue;
+
+      // Muestra trades de muestra si hay
+      const trades = d.trades_muestra || [];
+      if (trades.length) {
+        const t = trades[0];
+        items.push({ key, meta, ts, profit, label: t.mercado || t.par || "Señal detectada" });
+      } else if (profit > 0 || d.oportunidades > 0 || d.señales > 0) {
+        items.push({ key, meta, ts, profit, label: `${d.oportunidades || d.señales || 1} señal(es) detectada(s)` });
+      }
+    }
+  }
+
+  if (!items.length) {
+    feed.innerHTML = '<div class="empty-state">Sin señales en los últimos ticks.<br>Esperando oportunidades...</div>';
+    return;
+  }
+
+  const iconMap = { arb_yes_no:"ARB", arb_logico:"LOG", market_making:"MM", mean_reversion:"MR", momentum:"MOM" };
+  const bgMap = {
+    arb_yes_no:"ti-arb", arb_logico:"ti-arb",
+    market_making:"ti-mm", mean_reversion:"ti-mr", momentum:"ti-mo"
+  };
+
+  for (const item of items.slice(0, 12)) {
+    const div = document.createElement("div");
+    div.className = "trade-item";
+    div.innerHTML = `
+      <div class="trade-icon ${bgMap[item.key]}">${iconMap[item.key]}</div>
+      <div class="trade-meta">
+        <div class="trade-title">${item.label}</div>
+        <div class="trade-sub">${item.meta.nombre} · ${item.ts}</div>
+      </div>
+      <div class="trade-pnl ${colorPct(item.profit)}">${item.profit >= 0 ? "+" : ""}$${Math.abs(item.profit).toFixed(4)}</div>
+    `;
+    feed.appendChild(div);
+  }
+}
+
+function setPeriod(p, el) {
+  currentPeriod = p;
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  el.classList.add("active");
+  if (STATE) {
+    buildPnLChart(STATE);
+    buildMiniCharts(STATE);
+  }
+}
+
+async function refresh() {
+  const data = await fetchData();
+  if (!data) {
+    // Si no hay data aún, muestra estado inicial
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("app").style.display = "block";
+    document.getElementById("strat-tbody").innerHTML = `
+      <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:30px;font-family:var(--mono);font-size:12px">
+        Sin datos todavía. El bot ejecutará su primer tick en máx. 15 minutos.<br>
+        <span style="font-size:11px;opacity:.6">Asegúrate de que GitHub Actions está activo en tu repo.</span>
+      </td></tr>`;
+    document.getElementById("mini-charts").innerHTML = '<div class="empty-state">Esperando primer tick...</div>';
+    document.getElementById("trade-feed").innerHTML = '<div class="empty-state">Esperando primer tick...</div>';
+    return;
+  }
+
+  STATE = data;
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  document.getElementById("footer-ticks").textContent = (data.historial?.length || 0) + " ticks registrados";
+
+  renderKPIs(data);
+  renderStratTable(data);
+  buildPnLChart(data);
+  buildCapitalChart(data);
+  buildMiniCharts(data);
+  buildTradeFeed(data);
+
+  // Flash animación en KPIs
+  document.getElementById("kpi-strip").classList.remove("update-flash");
+  void document.getElementById("kpi-strip").offsetWidth;
+  document.getElementById("kpi-strip").classList.add("update-flash");
+}
+
+// Auto-refresh cada 60 segundos (aunque el bot actualiza cada 15 min)
+refresh();
+setInterval(refresh, 60000);
+</script>
+
+</body>
+</html>
