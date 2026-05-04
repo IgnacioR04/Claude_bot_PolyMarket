@@ -2,7 +2,7 @@
   "capital": {
     "arb_yes_no": 1000.0,
     "arb_logico": 1000.0,
-    "market_making": 1000.542299999976,
+    "market_making": 1000.5433999999759,
     "mean_reversion": 1000.0,
     "momentum": 1000.0
   },
@@ -20219,36 +20219,77 @@
           "trades_muestra": []
         }
       }
+    },
+    {
+      "timestamp": "2026-05-04T15:19:49.744829+00:00",
+      "mercados_disponibles": 100,
+      "estrategias": {
+        "arb_yes_no": {
+          "profit_tick": 0.0,
+          "capital_actual": 1000.0,
+          "retorno_pct": 0.0,
+          "oportunidades": 0,
+          "trades_muestra": []
+        },
+        "arb_logico": {
+          "profit_tick": 0.0,
+          "capital_actual": 1000.0,
+          "retorno_pct": 0.0,
+          "oportunidades": 0,
+          "trades_muestra": []
+        },
+        "market_making": {
+          "profit_tick": 0.0011,
+          "capital_actual": 1000.5434,
+          "retorno_pct": 0.0543,
+          "mercados_activos": 0,
+          "trades_muestra": []
+        },
+        "mean_reversion": {
+          "profit_tick": 0.0,
+          "capital_actual": 1000.0,
+          "retorno_pct": 0.0,
+          "se\u00f1ales": 0,
+          "trades_muestra": []
+        },
+        "momentum": {
+          "profit_tick": 0.0,
+          "capital_actual": 1000.0,
+          "retorno_pct": 0.0,
+          "se\u00f1ales": 0,
+          "trades_muestra": []
+        }
+      }
     }
   ],
-  "ultima_actualizacion": "2026-05-04T13:04:40.928403+00:00",
+  "ultima_actualizacion": "2026-05-04T15:19:49.744829+00:00",
   "stats": {
     "arb_yes_no": {
-      "trades": 493,
+      "trades": 494,
       "profit_total": 0.0,
       "mejor_tick": 0.0,
       "peor_tick": 0.0
     },
     "arb_logico": {
-      "trades": 493,
+      "trades": 494,
       "profit_total": 0.0,
       "mejor_tick": 0.0,
       "peor_tick": 0.0
     },
     "market_making": {
-      "trades": 493,
-      "profit_total": 0.5423,
+      "trades": 494,
+      "profit_total": 0.5434,
       "mejor_tick": 0.0011,
       "peor_tick": 0.0
     },
     "mean_reversion": {
-      "trades": 493,
+      "trades": 494,
       "profit_total": 0.0,
       "mejor_tick": 0.0,
       "peor_tick": 0.0
     },
     "momentum": {
-      "trades": 493,
+      "trades": 494,
       "profit_total": 0.0,
       "mejor_tick": 0.0,
       "peor_tick": 0.0
