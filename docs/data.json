@@ -2,52 +2,11 @@
   "capital": {
     "arb_yes_no": 1000.0,
     "arb_logico": 1000.0,
-    "market_making": 1002.8907999998719,
+    "market_making": 1002.8918999998718,
     "mean_reversion": 1000.0,
     "momentum": 1000.0
   },
   "historial": [
-    {
-      "timestamp": "2026-05-14T17:08:20.474546+00:00",
-      "mercados_disponibles": 100,
-      "estrategias": {
-        "arb_yes_no": {
-          "profit_tick": 0.0,
-          "capital_actual": 1000.0,
-          "retorno_pct": 0.0,
-          "oportunidades": 0,
-          "trades_muestra": []
-        },
-        "arb_logico": {
-          "profit_tick": 0.0,
-          "capital_actual": 1000.0,
-          "retorno_pct": 0.0,
-          "oportunidades": 0,
-          "trades_muestra": []
-        },
-        "market_making": {
-          "profit_tick": 0.0011,
-          "capital_actual": 1000.6919,
-          "retorno_pct": 0.0692,
-          "mercados_activos": 0,
-          "trades_muestra": []
-        },
-        "mean_reversion": {
-          "profit_tick": 0.0,
-          "capital_actual": 1000.0,
-          "retorno_pct": 0.0,
-          "se\u00f1ales": 0,
-          "trades_muestra": []
-        },
-        "momentum": {
-          "profit_tick": 0.0,
-          "capital_actual": 1000.0,
-          "retorno_pct": 0.0,
-          "se\u00f1ales": 0,
-          "trades_muestra": []
-        }
-      }
-    },
     {
       "timestamp": "2026-05-14T19:04:48.988810+00:00",
       "mercados_disponibles": 100,
@@ -82006,36 +81965,77 @@
           "trades_muestra": []
         }
       }
+    },
+    {
+      "timestamp": "2026-10-19T06:48:56.913957+00:00",
+      "mercados_disponibles": 100,
+      "estrategias": {
+        "arb_yes_no": {
+          "profit_tick": 0.0,
+          "capital_actual": 1000.0,
+          "retorno_pct": 0.0,
+          "oportunidades": 0,
+          "trades_muestra": []
+        },
+        "arb_logico": {
+          "profit_tick": 0.0,
+          "capital_actual": 1000.0,
+          "retorno_pct": 0.0,
+          "oportunidades": 0,
+          "trades_muestra": []
+        },
+        "market_making": {
+          "profit_tick": 0.0011,
+          "capital_actual": 1002.8919,
+          "retorno_pct": 0.2892,
+          "mercados_activos": 0,
+          "trades_muestra": []
+        },
+        "mean_reversion": {
+          "profit_tick": 0.0,
+          "capital_actual": 1000.0,
+          "retorno_pct": 0.0,
+          "se\u00f1ales": 0,
+          "trades_muestra": []
+        },
+        "momentum": {
+          "profit_tick": 0.0,
+          "capital_actual": 1000.0,
+          "retorno_pct": 0.0,
+          "se\u00f1ales": 0,
+          "trades_muestra": []
+        }
+      }
     }
   ],
-  "ultima_actualizacion": "2026-10-19T01:40:37.328113+00:00",
+  "ultima_actualizacion": "2026-10-19T06:48:56.913957+00:00",
   "stats": {
     "arb_yes_no": {
-      "trades": 2628,
+      "trades": 2629,
       "profit_total": 0.0,
       "mejor_tick": 0.0,
       "peor_tick": 0.0
     },
     "arb_logico": {
-      "trades": 2628,
+      "trades": 2629,
       "profit_total": 0.0,
       "mejor_tick": 0.0,
       "peor_tick": 0.0
     },
     "market_making": {
-      "trades": 2628,
-      "profit_total": 2.8908,
+      "trades": 2629,
+      "profit_total": 2.8919,
       "mejor_tick": 0.0011,
       "peor_tick": 0.0
     },
     "mean_reversion": {
-      "trades": 2628,
+      "trades": 2629,
       "profit_total": 0.0,
       "mejor_tick": 0.0,
       "peor_tick": 0.0
     },
     "momentum": {
-      "trades": 2628,
+      "trades": 2629,
       "profit_total": 0.0,
       "mejor_tick": 0.0,
       "peor_tick": 0.0
